@@ -6,6 +6,9 @@ const port = process.env.PORT;
 
 // connect
 database.connect();
+// body-parser
+const bodyParser = require("body-parser");
+app.use(bodyParser.json());
 // router
 const router = require("./API/v1/router/index.router");
 router(app);

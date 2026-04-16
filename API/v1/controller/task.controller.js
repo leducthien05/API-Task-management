@@ -4,16 +4,16 @@ const helperPagination = require("../../../helper/pagination");
 const helperSearch = require("../../../helper/search");
 
 // [GET] /api/v1/tasks
-module.exports.index = async (req, res)=>{
+module.exports.index = async (req, res) => {
     const find = {
         deleted: false
     };
-    if(req.query.status){
+    if (req.query.status) {
         find.status = req.query.status;
     }
     // Sắp xếp theo tiêu chí
     const sort = {};
-    if(req.query.sortKey && req.query.sortValue){
+    if (req.query.sortKey && req.query.sortValue) {
         sort[req.query.sortKey] = req.query.sortValue;
     }
     // Phân trang
@@ -21,14 +21,14 @@ module.exports.index = async (req, res)=>{
     const objectPagination = helperPagination.pagination(req.query, countRecord);
     // Tìm kiếm
     const search = helperSearch.search(req.query);
-    if(req.query.keyword){
+    if (req.query.keyword) {
         find.title = search.regex;
     }
     const task = await Task.find(find).sort(sort).limit(objectPagination.limit).skip(objectPagination.skipRecord);
     res.json(task);
 };
 // [GET] /api/v1/tasks/detail/:id
-module.exports.detail = async (req, res)=>{
+module.exports.detail = async (req, res) => {
     const id = req.params.id;
     const task = await Task.findOne({
         _id: id,
@@ -36,4 +36,28 @@ module.exports.detail = async (req, res)=>{
     });
     console.log(task);
     res.json(task);
+};
+// [PATCH] /api/v1/tasks/change-status/:id
+module.exports.changeStatus = async (req, res) => {
+    const id = req.params.id;
+    const status = req.body.status;
+    try {
+        await Task.updateOne({
+            _id: id,
+            deleted: false
+        }, {
+            $set: {
+                status: status
+            }
+        });
+        res.json({
+            code: 200,
+            message: "Cập nhật thành công"
+        });
+    } catch (error) {
+        res.json({
+            code: 100,
+            message: "Cập nhật thất bại"
+        });
+    }
 };

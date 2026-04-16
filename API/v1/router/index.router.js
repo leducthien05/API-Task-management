@@ -1,5 +1,5 @@
 const taskRouter = require("./task.router");
 
 module.exports = (app)=>{
-    app.use("/api/v1/", taskRouter);
+    app.use("/api/v1/tasks", taskRouter);
 }
