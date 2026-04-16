@@ -61,3 +61,76 @@ module.exports.changeStatus = async (req, res) => {
         });
     }
 };
+// [PATCH] /api/v1/tasks/change-multi-status
+module.exports.changeMultiStatus = async (req, res) => {
+    const id = req.body.id;
+    const status = req.body.status;
+    const key = req.body.key;
+    try {
+        switch (key) {
+            case "status":
+                await Task.updateMany({
+                    _id: { $in: id },
+                    deleted: false
+                }, {
+                    $set: {
+                        key: status
+                    }
+                });
+                res.json({
+                    code: 200,
+                    message: "Cập nhật thành công"
+                });
+                break;
+            default: 
+                res.json({
+                    code: 400,
+                    message: "Không tồn tại key"
+                });
+                break;
+        }
+
+    } catch (error) {
+        res.json({
+            code: 100,
+            message: "Cập nhật thất bại"
+        });
+    }
+};
+// [POST] /api/v1/tasks/create
+module.exports.create = async (req, res) => {
+    try {
+        const task = new Task(req.body);
+        await task.save();
+        res.json({
+            code: 200,
+            message: "Thêm mới thành công",
+            data: task
+        });
+
+    } catch (error) {
+        res.json({
+            code: 100,
+            message: "Thêm mới thất bại"
+        });
+    }
+};
+// [PATCH] /api/v1/tasks/edit/:id
+module.exports.edit = async (req, res) => {
+    try {
+        const id = req.params.id;
+        await Task.updateOne({
+            _id: id
+        }, req.body);
+        res.json({
+            code: 200,
+            message: "Chỉnh sửa thành công"
+        });
+
+    } catch (error) {
+        res.json({
+            code: 100,
+            message: "Thêm mới thất bại"
+        });
+    }
+};
