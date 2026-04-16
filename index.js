@@ -6,24 +6,9 @@ const port = process.env.PORT;
 
 // connect
 database.connect();
-
-const Task = require("./model/task.model");
-app.get("/tasks", async (req, res)=>{
-    const task = await Task.find({
-        deleted: false
-    });
-    console.log(task);
-    res.json(task);
-});
-app.get("/tasks/detail/:id", async (req, res)=>{
-    const id = req.params.id;
-    const task = await Task.findOne({
-        _id: id,
-        deleted: false
-    });
-    console.log(task);
-    res.json(task);
-});
+// router
+const router = require("./API/v1/router/index.router");
+router(app);
 
 app.listen(port, ()=>{
     console.log(`listening on port ${port}`);
