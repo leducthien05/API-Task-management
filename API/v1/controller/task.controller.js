@@ -66,15 +66,15 @@ module.exports.changeMultiStatus = async (req, res) => {
     const id = req.body.id;
     const status = req.body.status;
     const key = req.body.key;
+    console.log(key);
     try {
         switch (key) {
             case "status":
                 await Task.updateMany({
-                    _id: { $in: id },
-                    deleted: false
+                    _id: { $in: id }
                 }, {
                     $set: {
-                        key: status
+                        status: status
                     }
                 });
                 res.json({
@@ -82,7 +82,20 @@ module.exports.changeMultiStatus = async (req, res) => {
                     message: "Cập nhật thành công"
                 });
                 break;
-            default: 
+            case "deleted":
+                await Task.updateMany({
+                    _id: { $in: id }
+                }, {
+                    $set: {
+                        deleted: status
+                    }
+                });
+                res.json({
+                    code: 200,
+                    message: "Cập nhật thành công"
+                });
+                break;
+            default:
                 res.json({
                     code: 400,
                     message: "Không tồn tại key"
@@ -125,6 +138,29 @@ module.exports.edit = async (req, res) => {
         res.json({
             code: 200,
             message: "Chỉnh sửa thành công"
+        });
+
+    } catch (error) {
+        res.json({
+            code: 100,
+            message: "Thêm mới thất bại"
+        });
+    }
+};
+// [DELETE] /api/v1/tasks/delete/:id
+module.exports.delete = async (req, res) => {
+    try {
+        const id = req.params.id;
+        await Task.updateOne({
+            _id: id
+        }, {
+            $set: {
+                deleted: true
+            }
+        });
+        res.json({
+            code: 200,
+            message: "Xóa công việc thành công"
         });
 
     } catch (error) {
