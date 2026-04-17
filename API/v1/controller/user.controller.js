@@ -104,7 +104,8 @@ module.exports.forgotPassword = async (req, res) => {
 // [POST] /api/v1/users/getOTP
 module.exports.getOTP = async (req, res) => {
     const otp = await OTP.findOne({
-        otp: req.body.otp
+        otp: req.body.otp,
+        email: req.body.email
     });
     if (!otp) {
         res.json({
