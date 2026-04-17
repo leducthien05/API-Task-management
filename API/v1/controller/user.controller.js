@@ -1,6 +1,9 @@
 const User = require("../model/user.model");
+const OTP = require("../model/otp.model");
 
 const passwordHelper = require("../../../helper/password");
+const generateHelper = require("../../../helper/generate");
+const sendMail = require("../../../helper/sendmail");
 
 // [POST] /api/v1/users/register
 module.exports.register = async (req, res) => {
@@ -63,4 +66,56 @@ module.exports.login = async (req, res) => {
 
     }
 
+}
+// [POST] /api/v1/users/forgot-password
+module.exports.forgotPassword = async (req, res) => {
+    const user = await User.findOne({
+        email: req.body.email,
+        status: "active",
+        deleted: false
+    });
+    if (!user) {
+        res.json({
+            code: 400,
+            message: "Email không tồn tại"
+        });
+        return;
+    } else {
+        // tạo mã otp
+        const otp = generateHelper.generateRandomNumber(6);
+        const record = new OTP({
+            email: req.body.email,
+            otp: otp,
+            expireAt: new Date()
+        });
+        await record.save();
+        const subject = "Mã OTP xác nhận email";
+        const html = `
+            Mã OTP để lấy lại mật khẩu là <b>${otp}</b>. Sẽ hết hạn sau 3 phút
+        `;
+        const email = req.body.email;
+        sendMail.sendMail(email, subject, html);
+        res.json({
+            code: 200,
+            message: "Đã gửi OTP"
+        });
+    }
+}
+// [POST] /api/v1/users/getOTP
+module.exports.getOTP = async (req, res) => {
+    const otp = await OTP.findOne({
+        otp: req.body.otp
+    });
+    if (!otp) {
+        res.json({
+            code: 400,
+            message: "OTP không đúng hoặc đã hết hạn"
+        });
+        return;
+    } else {
+        res.json({
+            code: 200,
+            message: "OTP đã đúng"
+        });
+    }
 }
