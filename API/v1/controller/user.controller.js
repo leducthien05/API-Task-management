@@ -114,9 +114,14 @@ module.exports.getOTP = async (req, res) => {
         });
         return;
     } else {
+        const user = await User.findOne({
+            email: req.body.email
+        });
+        res.cookie("token", user.token);
         res.json({
             code: 200,
-            message: "OTP đã đúng"
+            message: "OTP đã đúng",
+            token: user.token
         });
     }
 }
