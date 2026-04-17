@@ -125,3 +125,53 @@ module.exports.getOTP = async (req, res) => {
         });
     }
 }
+// [POST] /api/v1/users/reset-password
+module.exports.resetPassword = async (req, res) => {
+    const user = await User.findOne({
+        token: req.body.token
+    });
+    if (!user) {
+        res.json({
+            code: 400,
+            message: "User không tồn tại"
+        });
+        return;
+    } else {
+        const password = await passwordHelper.hashPassword(req.body.password);
+        await User.updateOne({
+            token: req.body.token
+        }, {
+            $set: {
+                password: password
+            }
+        });
+        res.cookie("token", user.token);
+        res.json({
+            code: 200,
+            message: "Đã đổi mật khẩu thành công",
+            token: user.token
+        });
+
+    }
+}
+// [POST] /api/v1/users/detail
+module.exports.info = async (req, res) => {
+    const user = await User.findOne({
+        token: req.cookies.token,
+        deleted: false
+    }).select("-password -token");
+    if (!user) {
+        res.json({
+            code: 400,
+            message: "User không tồn tại"
+        });
+        return;
+    } else {
+        res.json({
+            code: 200,
+            message: "Thông tin người dùng",
+            user: user
+        });
+
+    }
+}
