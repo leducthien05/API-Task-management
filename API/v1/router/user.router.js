@@ -5,7 +5,7 @@ router.post("/register", controller.register);
 // router.get("/detail/:id", controller.detail);
 // router.patch("/change-status/:id", controller.changeStatus);
 // router.patch("/change-multi-status", controller.changeMultiStatus);
-// router.post("/create", controller.create);
+router.post("/login", controller.login);
 // router.patch("/edit/:id", controller.edit);
 // router.delete("/delete/:id", controller.delete);
 

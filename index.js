@@ -11,6 +11,8 @@ app.use(cors());
 database.connect();
 // body-parser
 const bodyParser = require("body-parser");
+// cookie-parser
+app.use(cookieParser())
 app.use(bodyParser.json());
 // router
 const router = require("./API/v1/router/index.router");
