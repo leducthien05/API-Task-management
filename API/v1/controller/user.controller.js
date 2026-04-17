@@ -1,5 +1,6 @@
 const User = require("../model/user.model");
 const OTP = require("../model/otp.model");
+const crypto = require("crypto");
 
 const passwordHelper = require("../../../helper/password");
 const generateHelper = require("../../../helper/generate");
@@ -22,7 +23,8 @@ module.exports.register = async (req, res) => {
         const user = new User({
             fullName: req.body.fullName,
             email: req.body.email,
-            password: password
+            password: password,
+            token: crypto.randomBytes(32).toString("hex")
         });
         await user.save();
         res.cookie("token", user.token);
