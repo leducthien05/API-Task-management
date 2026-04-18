@@ -165,3 +165,15 @@ module.exports.info = async (req, res) => {
     });
 
 }
+// [GET] /api/v1/users/listUser
+module.exports.list = async (req, res) => {
+    const user = await User.find({
+        deleted: false
+    }).select("fullName email");
+    res.json({
+        code: 100,
+        message: "Danh sách user",
+        user: user
+    });
+
+}
