@@ -158,22 +158,10 @@ module.exports.resetPassword = async (req, res) => {
 }
 // [POST] /api/v1/users/detail
 module.exports.info = async (req, res) => {
-    const user = await User.findOne({
-        token: req.cookies.token,
-        deleted: false
-    }).select("-password -token");
-    if (!user) {
-        res.json({
-            code: 400,
-            message: "User không tồn tại"
-        });
-        return;
-    } else {
-        res.json({
-            code: 200,
-            message: "Thông tin người dùng",
-            user: user
-        });
+    res.json({
+        code: 100,
+        message: "User cần lấy",
+        user: req.user
+    });
 
-    }
 }

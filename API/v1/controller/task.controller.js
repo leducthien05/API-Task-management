@@ -34,7 +34,6 @@ module.exports.detail = async (req, res) => {
         _id: id,
         deleted: false
     });
-    console.log(task);
     res.json(task);
 };
 // [PATCH] /api/v1/tasks/change-status/:id
