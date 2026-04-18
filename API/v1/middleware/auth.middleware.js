@@ -4,7 +4,6 @@ module.exports.requireAuth = async (req, res, next) => {
     if (req.headers.authorization) {
         const string = req.headers.authorization.split(" ");
         const token = string.pop();
-        console.log(token)
         const user = await User.findOne({
             token: token,
             deleted: false
