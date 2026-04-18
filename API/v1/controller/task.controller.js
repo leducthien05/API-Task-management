@@ -8,8 +8,8 @@ module.exports.index = async (req, res) => {
     const find = {
         deleted: false,
         $or: [
-            {createdBy: req.user.id},
-            {listUser: req.user._id}
+            { createdBy: req.user.id },
+            { listUser: req.user._id }
         ]
 
     };
@@ -117,7 +117,17 @@ module.exports.changeMultiStatus = async (req, res) => {
 // [POST] /api/v1/tasks/create
 module.exports.create = async (req, res) => {
     try {
-        req.body.createdBy = req.user.id;
+        const existTask = await Task.findOne({
+            _id: req.body.taskParentID
+        });
+        if (!existTask) {
+            res.json({
+                code: 400,
+                message: "Công việc cha không tồn tại"
+            });
+            return;
+        }
+        req.body.createdBy = req.user._id;
         const task = new Task(req.body);
         await task.save();
         res.json({
