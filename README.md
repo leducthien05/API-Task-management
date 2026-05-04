@@ -27,7 +27,16 @@ API được thiết kế theo chuẩn REST, dễ dàng tích hợp với fronte
 - Xác thực người dùng (JWT) 
 
 ---
+## ENV
+MONGO_URI=your_uri
+PORT=your_port
+EMAIL=your_email
+PASS=your_pass
+JWT_SECRET=your_secret
 
+## DEMO
+- email: levana@gmail.com
+- password: 123456
 ## 🚀 Installation
 
 ```bash
