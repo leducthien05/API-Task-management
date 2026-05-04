@@ -1,5 +1,5 @@
 module.exports.search = (query)=>{
-    objectSearch = {
+    const objectSearch = {
         keyword: "",
     }
     if(query.keyword){

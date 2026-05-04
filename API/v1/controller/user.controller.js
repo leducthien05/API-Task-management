@@ -1,6 +1,7 @@
 const User = require("../model/user.model");
 const OTP = require("../model/otp.model");
 const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
 
 const passwordHelper = require("../../../helper/password");
 const generateHelper = require("../../../helper/generate");
@@ -23,18 +24,31 @@ module.exports.register = async (req, res) => {
         const user = new User({
             fullName: req.body.fullName,
             email: req.body.email,
-            password: password,
-            token: crypto.randomBytes(32).toString("hex")
+            password: password
         });
         await user.save();
-        res.cookie("token", user.token);
+        // Tạo token
+        const token = jwt.sign(
+            {
+                id: user._id,
+                email: user.email
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: "1d"
+            }
+        );
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            maxAge: 24 * 60 * 60 * 1000
+        });
         res.json({
             code: 200,
             message: "OK",
-            token: user.token
+            token: token
         });
     }
-
 }
 // [POST] /api/v1/users/login
 module.exports.login = async (req, res) => {
@@ -58,11 +72,26 @@ module.exports.login = async (req, res) => {
             });
             return;
         } else {
-            res.cookie("token", user.token);
+            // Tạo token
+            const token = jwt.sign(
+                {
+                    id: user._id,
+                    email: user.email
+                },
+                process.env.JWT_SECRET,
+                {
+                    expiresIn: "1d"
+                }
+            );
+
+            res.cookie("token", token, {
+                httpOnly: true,
+                maxAge: 24 * 60 * 60 * 1000
+            });
             res.json({
                 code: 200,
                 message: "Đăng nhập thành công",
-                token: user.token
+                token: token
             });
         }
 
