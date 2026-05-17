@@ -6,26 +6,38 @@ module.exports.requireAuth = async (req, res, next) => {
         console.log(req.headers.authorization)
         const string = req.headers.authorization.split(" ");
         const token = string.pop();
-
-        const check = jwt.verify(
-            token,
-            process.env.JWT_SECRET
-        );
-        const user = await User.findOne({
-            _id: check.id,
-            deleted: false,
-            status: "active"
-        }).select("-password");
-        if (!user) {
-            res.status(403).json({
-                message: "Người dùng không tồn tại"
+        if (!token) {
+            return res.status(401).json({
+                message: "Không tìm thấy token"
             });
-            return;
         }
-        req.user = user;
-        next();
+        try {
+            const decoded = jwt.verify(
+                token,
+                process.env.JWT_SECRET
+            );
+
+            req.user = decoded;
+            next();
+
+        } catch (error) {
+
+            // token hết hạn
+            if (error.name === "TokenExpiredError") {
+                return res.status(401).json({
+                    code: "TOKEN_EXPIRED",
+                    message: "Access token expired"
+                });
+            }
+
+            // token bị sửa / invalid
+            return res.status(403).json({
+                code: "INVALID_TOKEN",
+                message: "Invalid token"
+            });
+        }
     } else {
-        res.status(404).json({
+        res.status(401).json({
             message: "Vui lòng gửi token"
         });
     }

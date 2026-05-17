@@ -1,4 +1,5 @@
 const User = require("../model/user.model");
+const Session = require("../model/session.model")
 const OTP = require("../model/otp.model");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
@@ -6,6 +7,8 @@ const jwt = require("jsonwebtoken");
 const passwordHelper = require("../../../helper/password");
 const generateHelper = require("../../../helper/generate");
 const sendMail = require("../../../helper/sendmail");
+
+const timeTTL = 7 * 24 * 60 * 60 * 1000;
 
 // [POST] /api/v1/users/register
 module.exports.register = async (req, res) => {
@@ -38,10 +41,17 @@ module.exports.register = async (req, res) => {
                 expiresIn: "1d"
             }
         );
-
-        res.cookie("token", token, {
+        // Tạo refreshToken
+        const refreshToken = crypto.randomBytes(64).toString("hex");
+        const refresh = new Session({
+            userID: user.id,
+            refreshToken: refreshToken,
+            expireAt: new Date(Date.now() + timeTTL)
+        });
+        await refresh.save();
+        res.cookie("refreshToken", refresh.refreshToken, {
             httpOnly: true,
-            maxAge: 24 * 60 * 60 * 1000
+            maxAge: timeTTL
         });
         res.json({
             code: 200,
@@ -80,13 +90,17 @@ module.exports.login = async (req, res) => {
                 },
                 process.env.JWT_SECRET,
                 {
-                    expiresIn: "1d"
+                    expiresIn: "15m"
                 }
             );
-
-            res.cookie("token", token, {
+            const refresh = await Session.findOne({
+                userID: user.id,
+                email: user.email
+            });
+            const refreshToken = refresh.refreshToken;
+            res.cookie("refreshToken", refreshToken, {
                 httpOnly: true,
-                maxAge: 24 * 60 * 60 * 1000
+                maxAge: timeTTL
             });
             res.json({
                 code: 200,
@@ -97,6 +111,42 @@ module.exports.login = async (req, res) => {
 
     }
 
+}
+// [POST] /api/v1/users/refresh
+module.exports.refresh = async (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+        return res.status(401).json({
+            message: "Gửi refresh token"
+        });
+    } else {
+        const refresh = await Session.findOneAndUpdate({
+            refreshToken: refreshToken
+        }, {
+            expireAt: new Date(Date.now() + timeTTL)
+        });
+        if (refresh) {
+            const accessToken = jwt.sign(
+                {
+                    id: refresh.userID,
+                    email: refresh.email
+                },
+                process.env.JWT_SECRET,
+                {
+                    expiresIn: "15m"
+                }
+            );
+            return res.json({
+                code: 200,
+                message: "Gia hạn thành công",
+                token: accessToken
+            });
+        }else{
+            return res.status(401).json({
+                message: "refresh token không hợp lệ",
+            });
+        }
+    }
 }
 // [POST] /api/v1/users/forgot-password
 module.exports.forgotPassword = async (req, res) => {

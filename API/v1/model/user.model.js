@@ -10,16 +10,6 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: "active"
     },
-    requestFriends: Array,
-    acceptFriends: Array, 
-    listFriends: [
-        {
-            friend_id: String,
-            room_chat_id: String
-        }
-    ],
-    statusOnline: String,
-    avatar: String,
     createdAt: Date, 
     updatedAt: Date,
     deleted: {
